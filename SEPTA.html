@@ -245,13 +245,24 @@ $(document).ready(function(){
 					$(".innerFooterTXTresults").html("$0.00");
 					var msg = "Advanced anytime tickets must be purchased in sets of 10.";
 					$("#mhelperTXT").html(msg);
+					$("#Trips").addClass("highlightedINPUT");
 					//$("#Trips").focus();
 					boolAdvance = false;
 				}else{
+					if ($("#Trips").hasClass("highlightedINPUT"))
+					{
+						$("#Trips").removeClass("highlightedINPUT");
+					}				
 					holding = mTrips / 10;
 				}  
-			}	
+			}else{
+
+				if ($("#Trips").hasClass("highlightedINPUT"))
+				{
+					$("#Trips").removeClass("highlightedINPUT");
+				}				
 			
+			}
 	
 			//loop thru the json, find the zone and match the options
 			$.each(SEPTAjson.zones, function(i, v) {

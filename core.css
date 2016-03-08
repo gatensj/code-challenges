@@ -166,3 +166,8 @@
 	{
 		background-color:yellow;	
 	}
+	
+	.highlightedINPUT
+	{
+		border: 5px red solid;
+	}

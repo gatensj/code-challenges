@@ -6,6 +6,7 @@
 	.sizeDiv
 	{
 	width:640px; margin:0px auto;
+	padding:20px 10px 20px 10px;
 	}
 
 	body
@@ -19,6 +20,21 @@
 	-webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
+	}
+
+	input
+	{
+	cursor:pointer;
+	}	
+	
+	select
+	{
+	cursor:pointer;	
+	}
+	
+	.mLabel
+	{
+	cursor:pointer;
 	}
 	
 	.containgDiv
@@ -68,7 +84,7 @@
     transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
 	}
 
-	#Trips
+	.mTrips
 	{
 	text-align:center;
 	}
@@ -138,10 +154,15 @@
 		text-align:center; margin-top:10px; 
 	}
 
-	#mhelperTXT
+	.helperTXTsize
 	{
 		min-height:70px;
 		color:#808080;
 		font-size:1.27em;
 		margin-bottom:0px;
+	}
+
+	.highlightedTXT
+	{
+		background-color:yellow;	
 	}

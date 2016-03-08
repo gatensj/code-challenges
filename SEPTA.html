@@ -12,7 +12,7 @@
 <!-- -->
 
 <!-- -->
-<link href="core.css" rel="stylesheet">
+<link href="core.css" rel="stylesheet" media="screen">
 <!-- -->
 
 </head>
@@ -37,7 +37,7 @@
             <!-- -->
 
 			<!-- -->
-            <div class="containgDivBody">
+            <div class="containgDivBody js-containgDivBody">
             
             	<!-- -->
 				<div class="QuestionDiv">
@@ -61,12 +61,12 @@
                     <h3 class="innerBodyTXT">When are you riding?</h3>
     
                     <select class="mForm dropDown" id="Type">
-                      <label class="mInfo"><option class="helperTXT" value="weekday">Weekday</option></label>
-                      <label class="mInfo"><option class="helperTXT" value="evening_weekend">Weekend / Evenings</option></label>
-                      <label class="mInfo"><option class="helperTXT" value="anytime">Anytime</option></label>
+                      <label class="js-mInfo"><option class="helperTXT" value="weekday">Weekday</option></label>
+                      <label class="js-mInfo"><option class="helperTXT" value="evening_weekend">Weekend / Evenings</option></label>
+                      <label class="js-mInfo"><option class="helperTXT" value="anytime">Anytime</option></label>
                     </select>
                 
-                	<p class="helperTXT" id="mhelperTXT">Helper text that explains the options above.</p>
+                	<p class="helperTXT helperTXTsize" id="mhelperTXT">Helper text that explains the options above.</p>
                 
 				</div>
                 <!-- -->
@@ -77,14 +77,14 @@
                     <h3 class="innerBodyTXT">Where will you purchase the fare?</h3>
 
                     <div class="radio radioDiv">
-                    <label class="mInfo">
+                    <label class="js-mInfo mLabel">
                     <input type="radio" class="helperTXT mRadio" name="Purchase" value="advance_purchase" checked="checked">
                     <span>Station Kiosk</span>
                     </label>
                     </div>
 
                     <div class="radio radioDiv">
-                    <label class="mInfo">
+                    <label class="js-mInfo mLabel">
                     <input type="radio" class="helperTXT mRadio" name="Purchase" value="onboard_purchase">
                     <span>Onboard</span>
                     </label>
@@ -99,7 +99,7 @@
                     <h3 class="innerBodyTXT">How many rides will you need?</h3>
    					
                     <div class="inputTxtDIV">
-                    <input class="mForm numeric" id="Trips" type="text" placeholder="Number of Rides">
+                    <input class="mForm js-numeric mTrips" id="Trips" type="text" placeholder="Number of Rides">
                 	</div>
                     
 				</div>
@@ -124,9 +124,8 @@
 </div>
 <!-- -->
 
-<!-- jQuery (necessary for Bootstrap's JavaScript plugins) --> 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js" type="text/javascript"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js" type="text/javascript"></script>
+<!-- jQuery (necessary ) --> 
+<script src="jquery.min.js" type="text/javascript"></script>
 <!-- -->
 
 <!-- -->
@@ -136,137 +135,194 @@ $(document).ready(function(){
 	//This is the jquery written to support the calculator functionality, writen by Jeremy Gatens.  Thanks for reviewing my code.  Take care and have a good day.
 
 
-	//let's go get us some JSON
+	//jQuery variable declaration
 	var mURL = "fares.json";
+	var text_val = "";
 	var SEPTAjson;
+
+
+	//let's go get us some JSON
+	$.ajax({
+	  dataType: 'json',
+	  url: mURL,
+	  data: JSON,
+	  success: function(data){
+            SEPTAjson = data;
+        }
+	});	
 	
-	$.getJSON(mURL, function(data){
-		SEPTAjson = data;
-	});
-	
-	
+
 	//quick function to prevent letters in the ticket input
-	$('.numeric').on('input', function (event) { 
+	$('.js-numeric').on('input', function (event) { 
 		this.value = this.value.replace(/[^0-9]/g, '');
 	});
 	
 
 	//functions to handle the helper text functionality with a holding variable
-	function helperIn(n) {
+	function helperIn(n) {	
 
+		if(n == "anytime") 
+		{
+			 $("input:radio:first").click();	
+		}
+		
 			$.each(SEPTAjson.info, function(i, v) {
      		if (i.search(n) != -1){
-					$("#mhelperTXT").html(v);
-					return;
+				if(v == "Valid anytime")
+				{
+				v = v + ". Please remember advanced anytime tickets must be purchased in advance in sets of 10.";
+				}
+				if(v == "Tickets available for purchase from a train conductor aboard SEPTA regional rail trains.")
+				{
+				v = v + " This does not include anytime tickets.";	
+				}
+				$("#mhelperTXT").html(v);
+				return;
 				}
 			});
 
 	}
 
+	//second part of the helper function
 	function helperOut(n) {
 		$("#mhelperTXT").html(n);
 	}	
 	
-	var text_val = "";
+
+	//Function to prevent buying anytime tickets onboard the train
+	function mRadioHelper(){
+		var n = $("#Type").val();		
+		
+		if(n == "anytime") 
+		{
+			 $("input:radio:first").click();	
+		}
+		
+	}
+
+
+	//function to return the number formatted as a currency
+	function formatCash(n, currency) {
+	return currency + " " + n.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
+	}
+
 	
+	//function to fire input values change and the number of tickets is filled out
+	function showTicketPrice()
+	{
+		
+		if($("#Trips").val())
+		{
+			//quick check to make sure the form is complete
+			var empty = $(".js-containgDivBody").find("input").filter(function() {
+				return this.value === "";
+			});
 	
+			if(empty.length) {
+				$("#Trips").focus();
+				event.stopPropagation();
+				event.preventDefault();
+				event.stopImmediatePropagation();
+			}
+			
+			//variable assignment
+			var mZone = $("#Zone").val();
+			var mType = $("#Type").val();
+			var mPurchase = $('input:radio[name=Purchase]:checked').val();		
+			var mTrips = $("#Trips").val();
+			var mResult = 0;
+			var boolAdvance = true;
+			var mPrice;
+			var returnedData;
+			var holding;
+		
+	
+			//logic to make sure anytime purchases are divisible by 10
+			if(mType == "anytime")
+			{
+				if (mTrips % 10 != 0)
+				{
+					$(".innerFooterTXTresults").html("$0.00");
+					var msg = "Advanced anytime tickets must be purchased in sets of 10.";
+					$("#mhelperTXT").html(msg);
+					//$("#Trips").focus();
+					boolAdvance = false;
+				}else{
+					holding = mTrips / 10;
+				}  
+			}	
+			
+	
+			//loop thru the json, find the zone and match the options
+			$.each(SEPTAjson.zones, function(i, v) {
+				if (v.zone == mZone) {
+					returnedData = $.grep(v.fares, function(element, index){
+					return element.type == mType && element.purchase == mPurchase;
+				});			
+				
+				}
+			});
+	
+			if (boolAdvance)
+			{
+				//check the json result and apply arithmetic logic
+				if (returnedData.length) {
+					mPrice = returnedData[0].price;
+		
+					if(mType != "anytime")
+					{
+					mResult = mPrice * mTrips;	
+					}else{
+					mResult = mPrice * holding;	
+					}
+					 
+					mResult = formatCash(mResult, "$");
+					$(".innerFooterTXTresults").html(mResult);
+				}
+			}
+		}
+			
+	}
+
+
+	//fires the showTicketPrice function on the zone dropdown if ticket number is filled out
+	$("#Zone").change(function () {
+		showTicketPrice();
+    });
+
+
+	//fires the showTicketPrice function on the radio change
+	$(".mRadio").change(function () {
+		mRadioHelper();
+		showTicketPrice();
+    });
+
+
 	//fires the helperinfo function on the dropdown
 	$("#Type").change(function () {
         var end = this.value;
 		helperIn(end);
-    });
-
-
-	//fires the helperinfo function on hover of the radio buttons
-	$(".mInfo").hover(function(){
-		text_val = $(this).children('.helperTXT').first().val();
-		
-		helperIn(text_val);
-        }, function(){
-        helperOut("<br/>");
+		showTicketPrice();
     });
 
 
 	//jquery event to fire after tickets input filled out
 	$("#Trips").blur(function(){
-
-		//quick check to make sure the form is complete
-	    var empty = $(".containgDivBody").find("input").filter(function() {
-            return this.value === "";
-        });
-
-        if(empty.length) {
-            
-            alert("Please fill out the number of tickets needed.");
-			$("#Trips").focus();
-			return  false;
-        }
-		
-
-		//function to return the number formatted as a currency
-		function formatCash(n, currency) {
-		return currency + " " + n.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
-		}
-
-
-		//variable assignment
-		var mZone = $("#Zone").val();
-		var mType = $("#Type").val();
-		var mPurchase = $('input:radio[name=Purchase]:checked').val();		
-		var mTrips = $("#Trips").val();
-		var mPrice;
-		var mResult = 0;
-		var returnedData;
-		var holding;
-	
-
-		//logic to make sure anytime purchases are divisible by 10
-		if(mType == "anytime")
-		{
-			if (mTrips % 10 != 0)
-			{
-				alert("Advanced trips must be purchased in sets of 10");
-				return false;				
-			}
-			else
-			{
-				holding = mTrips / 10;
-			}  
-		}	
-		
-
-		//loop thru the json, find the zone and match the options
-		$.each(SEPTAjson.zones, function(i, v) {
-			if (v.zone == mZone) {
-		   		returnedData = $.grep(v.fares, function(element, index){
-				return element.type == mType && element.purchase == mPurchase;
-			});			
-			
-			}
-		});
-
-
-		//check the json result and apply arithmetic logic
-		if (returnedData.length != 1) {
-		  alert('There was an unexpected problem.');
-		  return false;
-		} else {
-			mPrice = returnedData[0].price;
-
-			if(mType != "anytime")
-			{
-			mResult = mPrice * mTrips;	
-			}
-			else
-			{
-			mResult = mPrice * holding;	
-			}
-			 
-			mResult = formatCash(mResult, "$");
-			$(".innerFooterTXTresults").html(mResult);
-		}
-
+		showTicketPrice();
     });
+
+
+	//fires the helperinfo function on hover of the radio buttons
+	$(".js-mInfo").hover(function(){
+		text_val = $(this).children('.helperTXT').first().val();
+		$(this).addClass("highlightedTXT");
+		helperIn(text_val);
+        }, function(){
+        $(this).removeClass("highlightedTXT");
+		helperOut("<br/>");
+    });
+
+
 });
 </script>
 <!-- -->
